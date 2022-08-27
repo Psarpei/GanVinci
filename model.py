@@ -6,6 +6,7 @@ import operator
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.nn import Conv2d
 from torch.autograd import Function
 
 from op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d, conv2d_gradfix
@@ -568,6 +569,194 @@ class Generator(nn.Module):
 
         else:
             return image, None
+
+
+class FEAT(nn.Module):
+    def __init__(
+        self,
+        generator,
+        att_start=0,
+        att_layer=8,
+        att_channel=32
+    ):
+        super().__init__()
+        self.generator = generator 
+        self.att_layer=att_layer
+        self.att_start = att_start
+        self.att_channel = att_channel
+        self.att_size = 1024 if att_layer == 18 else 2**((att_layer+4) //2)
+        self.att_convs = nn.ModuleList()
+        self.att_conv1 = Conv2d(self.generator.channels[4], 32, 1)
+        self.mapper = nn.ModuleList()
+        
+        for i in range(3, self.generator.log_size+1):
+            in_channel = self.generator.channels[2 ** i]
+            
+            for i in range(2):
+                self.att_convs.append(
+                    Conv2d(in_channel, att_channel, 1)
+                )
+
+        self.att_convs.append(Conv2d(3, att_channel, 1)) #for 18th layer(rgb)
+        self.att_convs.append(Conv2d(att_channel*18,1,1))
+
+        for i in range((att_layer-att_start)*2):
+            self.mapper.append(torch.nn.Linear(512, 512))
+         
+
+    def forward(
+        self,
+        styles,
+        return_latents=False,
+        inject_index=None,
+        truncation=1,
+        truncation_latent=None,
+        input_is_latent=False,
+        noise=None,
+        randomize_noise=True,
+        alpha=0.1,
+        mask_threshold=0,
+    ):
+        if not input_is_latent:
+            styles = [self.generator.style(s) for s in styles]
+
+        if noise is None:
+            if randomize_noise:
+                noise = [None] * self.generator.num_layers
+            else:
+                noise = [
+                    getattr(self.generator.noises, f"noise_{i}") for i in range(self.generator.num_layers)
+                ]
+
+        if truncation < 1:
+            style_t = []
+
+            for style in styles:
+                style_t.append(
+                    truncation_latent + truncation * (style - truncation_latent)
+                )
+
+            styles = style_t
+
+        if len(styles) < 2:
+            inject_index = self.generator.n_latent
+
+            if styles[0].ndim < 3:
+                latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
+
+            else:
+                latent = styles[0]
+
+        else:
+            if inject_index is None:
+                inject_index = random.randint(1, self.generator.n_latent - 1)
+
+            latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
+            latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
+
+            latent = torch.cat([latent, latent2], 1)
+
+        out = self.generator.input(latent)
+        out = self.generator.conv1(out, latent[:, 0], noise=noise[0])
+
+        out_att = F.interpolate(self.att_conv1(out),
+                                size=(self.att_size, self.att_size),
+                                mode='bilinear')
+
+        skip = self.generator.to_rgb1(out, latent[:, 1])
+
+        i = 1
+        for conv1, conv2, noise1, noise2, to_rgb in zip(
+            self.generator.convs[::2], self.generator.convs[1::2], noise[1::2], noise[2::2], self.generator.to_rgbs
+        ):
+            out = conv1(out, latent[:, i], noise=noise1)
+            if((i+1) == self.att_layer):
+                features_att =  torch.clone(out)
+            out_att = torch.cat((out_att, 
+                                 F.interpolate(self.att_convs[i-1](out),
+                                               size=(self.att_size,self.att_size),
+                                               mode='bilinear')
+                                ),
+                                dim=1
+
+            )
+            out = conv2(out, latent[:, i + 1], noise=noise2)
+            if((i+2) == self.att_layer):
+                features_att = torch.clone(out)
+            out_att = torch.cat((out_att, 
+                                 F.interpolate(self.att_convs[i](out),
+                                                 size=(self.att_size,self.att_size),
+                                                 mode='bilinear')
+                                ),
+                                dim=1
+            )
+            skip = to_rgb(out, latent[:, i + 2], skip)
+
+            i += 2
+
+        image = skip
+        if(18 == self.att_layer):
+            features_att = torch.clone(image)
+
+        out_att = torch.cat((out_att, 
+                             F.interpolate(self.att_convs[-2](image),
+                                           size=(self.att_size,self.att_size),
+                                           mode='bilinear')
+                            ),
+                            dim=1
+                              
+        )
+
+        mask = torch.sigmoid(self.att_convs[-1](out_att))
+        if(mask_threshold):
+            mask[mask < mask_threshold] = 0
+
+        
+        latent_feat = latent[:, 0].unsqueeze(1) if self.att_start > 0 else latent[:, 0].unsqueeze(1) + alpha * self.mapper[1](F.relu(self.mapper[0](latent[:,0]))).unsqueeze(1)
+
+        
+        for i in range(2, 36, 2):
+
+            latent_feat = torch.cat((latent_feat,latent[:, i//2].unsqueeze(1)), dim=1) if (self.att_start > (i // 2)) or (
+                self.att_layer <= (i // 2)) else torch.cat((latent_feat, latent[:, i//2].unsqueeze(1) + alpha * self.mapper[i-2*self.att_start+1](
+                                                                F.relu(self.mapper[i-2*self.att_start](latent[:,i//2]))                
+                                                                ).unsqueeze(1)
+                                                           ),
+                                                           dim=1
+                                                          )
+
+        out = self.generator.input(latent)
+        out = self.generator.conv1(out, latent_feat[:, 0], noise=noise[0])
+
+        skip = self.generator.to_rgb1(out, latent_feat[:, 1])
+
+        i = 1
+        for conv1, conv2, noise1, noise2, to_rgb in zip(
+            self.generator.convs[::2], self.generator.convs[1::2], noise[1::2], noise[2::2], self.generator.to_rgbs
+        ):
+
+            out = conv1(out, latent_feat[:, i], noise=noise1)
+            
+            if(i+1 == self.att_layer):
+                out = mask * out + (1-mask) * features_att
+
+            out = conv2(out, latent_feat[:, i + 1], noise=noise2)
+            if(i+2 == self.att_layer):
+                out = mask * out + (1-mask) * features_att
+
+            skip = to_rgb(out, latent_feat[:, i + 2], skip)
+
+            i += 2
+
+        edited_image = skip
+        if(18 == self.att_layer):
+               edited_image = mask * edited_image + (1-mask) * features_att
+
+        if return_latents:
+            return image, edited_image, mask, latent, latent_feat 
+
+        else:
+            return image, edited_image, mask, None, None
 
 
 class ConvLayer(nn.Sequential):
