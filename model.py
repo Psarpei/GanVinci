@@ -586,7 +586,7 @@ class FEAT(nn.Module):
         self.att_channel = att_channel
         self.att_size = 1024 if att_layer == 18 else 2**((att_layer+4) //2)
         self.att_convs = nn.ModuleList()
-        self.att_conv1 = Conv2d(self.generator.channels[4], 32, 1)
+        self.att_conv1 = Conv2d(self.generator.channels[4], att_channel, 1)
         self.mapper = nn.ModuleList()
         
         for i in range(3, self.generator.log_size+1):
