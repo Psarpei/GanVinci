@@ -79,7 +79,8 @@ def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, tex
     tv_losses = []
     losses = []
 
-    for i in range(1, args.iterations +1):
+    i = 1
+    while i <= args.iterations:
         #reset gradients
         optimizer.zero_grad()
         
@@ -155,6 +156,7 @@ def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, tex
                         },
                         f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/checkpoints/{str(i).zfill(5)}_{args.clip_text}.pt",
                     )
+        i+=1
 
 
 if __name__ == "__main__":
