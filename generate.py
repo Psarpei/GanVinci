@@ -1,16 +1,28 @@
 import argparse
+from cgitb import text
 
 import torch
 from torchvision import utils
 from model import FEAT, Generator
-from tqdm import tqdm
+#from tqdm import tqdm
+
+import clip
+from torch.nn import functional as F
 
 
-def generate(args, feat, device, mean_latent):
+def clip_most_likely_cat(image, cat_tokens, clip_model):
+
+    logits_per_image, _ = clip_model(image, cat_tokens)
+    probs = logits_per_image.softmax(dim=-1)
+    return probs[0]
+
+
+def generate(args, feat, device, mean_latent, clip_model, mf_tokens): # text_tokens):
 
     with torch.no_grad():
         feat.eval()
-        for i in tqdm(range(args.pics)):
+        i = 0
+        while i < args.pics:
             sample_z = torch.randn(args.sample, args.latent, device=device)
 
             sample, edited_sample, mask, _ ,_ = feat(
@@ -21,6 +33,33 @@ def generate(args, feat, device, mean_latent):
                 mask_threshold=args.mask_threshold
             )
 
+            if(args.male_only):
+                sample_resized = F.interpolate(sample,
+                                            size=(224, 224),
+                                            mode='bilinear')
+
+                probs = clip_most_likely_cat(sample_resized, mf_tokens, clip_model)
+
+            if(args.male_only and probs[0] < 0.8):
+                print(probs)
+                continue
+
+            """
+            sample_resized = F.interpolate(sample,
+                                     size=(224, 224),
+                                     mode='bilinear')
+
+            
+            probs = clip_most_likely_cat(sample_resized, text_tokens, clip_model)
+            if(probs[0] > 0.8):
+                utils.save_image(
+                    sample,
+                    f"sample/{str(i).zfill(6)}_{['male', 'female'][probs.argmax()]}_{probs}.png",
+                    nrow=1,
+                    normalize=True,
+                    range=(-1, 1),
+                )
+            """
             utils.save_image(
                 sample,
                 f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/samples/{str(i).zfill(6)}.png",
@@ -47,6 +86,7 @@ def generate(args, feat, device, mean_latent):
             print('mask')
             print(mask)
             print(mask.max())
+            i+=1
 
 
 if __name__ == "__main__":
@@ -124,12 +164,18 @@ if __name__ == "__main__":
         "--train_iter",
         type=str,
         default=""
-    )    
+    )  
+    parser.add_argument(
+        "--male_only",
+        action="store_true"
+    )  
 
     args = parser.parse_args()
 
     args.latent = 512
     args.n_mlp = 8
+
+    assert not args.male_only or args.sample == 1, "male_only is only possible at batch_size 1"
 
     if args.seed:
         torch.manual_seed(args.seed)
@@ -148,10 +194,16 @@ if __name__ == "__main__":
         feat_checkpoint=torch.load(f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/checkpoints/{args.train_iter}_{args.clip_text}.pt")
         feat.load_state_dict(feat_checkpoint["weights"])
 
+    mf_tokens = clip.tokenize(['male', 'female']).to(device) #only used if args.male_only
+
     if args.truncation < 1:
         with torch.no_grad():
             mean_latent = g_ema.mean_latent(args.truncation_mean)
     else:
         mean_latent = None
 
-    generate(args, feat, device, mean_latent)
+    #initialize clip model prerequisites
+    clip_model, _ = clip.load("ViT-B/32", device=device)
+    #text_tokens = clip.tokenize(["male", "female"]).to(device)
+
+    generate(args, feat, device, mean_latent, clip_model, mf_tokens)
