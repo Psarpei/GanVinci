@@ -100,7 +100,7 @@ def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, tex
 
         probs = clip_most_likely_cat(sample_resized, mf_tokens, clip_model)
         
-        if(args.male_only and probs[0] < 0.8):
+        if((args.male_only and probs[0] < 0.8) or (args.female_only and probs[1] < 0.8)):
             continue
         
         #l_clip = clip_loss(edit_resized, text_tokens, clip_model, cos_sim)
@@ -260,7 +260,13 @@ if __name__ == "__main__":
         "--male_only",
         action="store_true"
     )  
+    parser.add_argument(
+        "--female_only",
+        action="store_true"
+    )
+
     parser.set_defaults(male_only=False)
+    parser.set_defaults(female_only=False)
 
     args = parser.parse_args()
 
@@ -268,6 +274,7 @@ if __name__ == "__main__":
     args.n_mlp = 8
 
     assert not args.male_only or args.batch_size == 1, "male_only is only possible at batch_size 1"
+    assert not args.female_only or args.batch_size == 1, "female_only is only possible at batch_size 1"
 
     #initialize generator
     g_ema = Generator(
