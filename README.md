@@ -6,15 +6,127 @@ Reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.
 1. Clone this repository ```https://github.com/Psarpei/GanVinci.git```
 2. CD into this repo: ```cd GanVinci```
 3. Create conda environment from environment.yml ```conda env create -f environment.yml```
-4. Download StyleGAN2 weights from xxxxx /home/pascal/code/GanVinci/stylegan2-ffhq-config-f.pt 
+4. Download StyleGAN2 config-f weights from xxxxx /home/pascal/code/GanVinci/stylegan2-ffhq-config-f.pt 
 5. Place weights under ```checkpoints/```
 
-## Requirements
+## Training
+To train an text guided image editing (e.g. ```beard```, ```open_mouth```, ```blond hair``` execute:
+    python3 train_FEAT.py
+with the following parameters
 
-I have tested on:
+* ```--size``` output image size of the generator, type ```int```, default ```1024```
+    )
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=20000,
+        help="number of samples to be generated for each image",
+    )
+    parser.add_argument("--truncation", type=float, default=1, help="truncation ratio")
+    parser.add_argument(
+        "--truncation_mean",
+        type=int,
+        default=4096,
+        help="number of vectors to calculate mean for the truncation",
+    )
+    parser.add_argument(
+        "--stylegan2_ckpt",
+        type=str,
+        default="stylegan2-ffhq-config-f.pt",
+        help="path to the model checkpoint",
+    )
+    parser.add_argument(
+        "--channel_multiplier",
+        type=int,
+        default=2,
+        help="channel multiplier of the generator. config-f = 2, else = 1",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=1
+    )
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=0.0001
+    )
+    parser.add_argument(
+        "--lambda_att",
+        type=float,
+        default=0.005,
+        help="latent attention regression loss factor",
+    )
+    parser.add_argument(
+        "--lambda_tv",
+        type=float,
+        default=0.00001,
+        help="total variation loss factor",
+    )
+    parser.add_argument(
+        "--lambda_l2",
+        type=float,
+        default=0.8,
+        help="l2 loss factor"
+    )
+    parser.add_argument(
+        "--clip_text",
+        type=str,
+        help="edit text e.g. beard or smile",
+    )
+    parser.add_argument(
+        "--att_layer",
+        type=int,
+        default=8,
+        help="layer of attention map",
+    )
+    parser.add_argument(
+        "--att_channel",
+        type=int,
+        default=32,
+        help="number of channels of attention map",
+    )
+    parser.add_argument(
+        "--att_start",
+        type=int,
+        default=0,
+        help="start attention layer of the latent mapper",
+    )
+    parser.add_argument(
+        "--lr_step_size",
+        type=int,
+        default=5000,
+        help="learning rate step size for scheduler",
+    )
+    parser.add_argument(
+        "--lr_gamma",
+        type=float,
+        default=0.5,
+        help="gamma for learning rate of scheduler",
+    )
+    parser.add_argument(
+        "--alpha",
+        type=float,
+        default=0.5,
+        help="factor of latent mapper",
+    )
+    parser.add_argument(
+        "--male_only",
+        action="store_true",
+        help="flag that only uses images of male people"
 
-- PyTorch 1.3.1
-- CUDA 10.1/10.2
+    )  
+    parser.add_argument(
+        "--female_only",
+        action="store_true",
+        help="flag that only uses images of female people"
+    )
+    parser.add_argument(
+        "--clip_only_steps",
+        type=int,
+        default=0,
+        help="amount of steps training only using clip loss for better convergence in some edits"
+    )
 
 ## Usage
 
