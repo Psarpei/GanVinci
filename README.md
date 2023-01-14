@@ -46,14 +46,14 @@ For inference it is required to have trained edits placed under a structure like
   - att_start1:att_stop1/
 
 ```
-.edits/
+edits/
 ├── 0-8/
-├── beard/
-│   │   ├──  checkpoints/  
-│   │   │   ├── 01000_beard.pt
-│   │   │   ├── 02000_beard.pt    
-│   ... ... ...
-│   │   │   └── 20000_beard.pt    
+│   ├── beard/
+│   │   │   ├──  checkpoints/  
+│   │   │   │   ├── 01000_beard.pt
+│   │   │   │   ├── 02000_beard.pt    
+│   │   ... ... ...
+│   │   │   │   └── 20000_beard.pt    
 │   ...
 ...
 ```
