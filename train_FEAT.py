@@ -23,22 +23,14 @@ class CLIPLoss(torch.nn.Module):
     def forward(self, image, text):
         image = self.avg_pool(self.upsample(image))
         cos_distance = 1 - self.model(image, text)[0] / 100
+
         return cos_distance.mean()
-
-
-def clip_loss(image, text_tokens, clip_model, cos_sim):
-    
-    image_features = clip_model.encode_image(image)
-    text_features = clip_model.encode_text(text_tokens)
-
-    cos_dist = 1- cos_sim(image_features, text_features)
-    
-    return cos_dist.mean()
 
 def clip_most_likely_cat(image, cat_tokens, clip_model):
 
     logits_per_image, _ = clip_model(image, cat_tokens)
     probs = logits_per_image.softmax(dim=-1)
+
     return probs[0]
 
 def att_reg_loss(mask):
@@ -47,15 +39,11 @@ def att_reg_loss(mask):
     return att_loss.mean() 
 
 
-def latent_loss(latent, latent_feat, att_start, att_layer):
+def latent_loss(mse, latent, latent_feat, att_start, att_layer):
 
-    l2_loss = torch.sqrt(torch.sum(
-                            torch.square(latent[:,att_start:att_layer] - latent_feat[:,att_start:att_layer]),
-                             dim=-1
-                            )
-                        ).sum(dim=-1)
+    l2_loss = mse(latent[:,att_start:att_layer], latent_feat[:,att_start:att_layer])
 
-    return l2_loss.mean()
+    return l2_loss
 
 
 def total_variation_loss(mask):
@@ -70,7 +58,7 @@ def total_variation_loss(mask):
     return tv_loss.mean()
 
 
-def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, text_tokens, cos_sim, clip_loss_s, mse, mf_tokens):
+def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, text_tokens, cos_sim, clip_loss, mse, mf_tokens):
     log_string = "iteration: {:5}, loss: {:2.6} l_clip: {:2.6f}, l_att: {:2.6f}, l_l2: {:2.6f}, l_tv: {:2.6f}"
 
     clip_losses = []
@@ -103,28 +91,20 @@ def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, tex
         if((args.male_only and probs[0] < 0.8) or (args.female_only and probs[1] < 0.8)):
             continue
         
-        #l_clip = clip_loss(edit_resized, text_tokens, clip_model, cos_sim)
-        l_clip = clip_loss_s(edit_sample, text_tokens)
+        l_clip = clip_loss(edit_sample, text_tokens)
 
         l_att = att_reg_loss(mask)
-        #l_l2 = latent_loss(latent, latent_feat, args.att_start, args.att_layer)
+        #l_l2 = latent_loss(mse, latent, latent_feat, args.att_start, args.att_layer)
         l_l2 = mse(latent[:,args.att_start:args.att_layer], latent_feat[:,args.att_start:args.att_layer])
         l_tv = total_variation_loss(mask)
 
-
-        """
-        if i < 300:
+        if i < args.clip_only_steps:
             loss = l_clip
         else:
-            loss = l_clip + args.lambda_l2 * l_l2 + args.lambda_att * l_att + args.lambda_tv * l_tv 
-        """
+            loss = l_clip + args.lambda_l2 * l_l2 + args.lambda_att * l_att + args.lambda_tv * l_tv         
 
         loss = l_clip + args.lambda_l2 * l_l2 + args.lambda_att * l_att + args.lambda_tv * l_tv 
 
-        #print('old')
-        #print(log_string.format(i, loss, l_clip, args.lambda_att * l_att, args.lambda_l2 * l_l2, args.lambda_tv * l_tv))
-        #print(log_string.format(i, loss, l_clip, l_att, l_l2, l_tv))
-        #print('new')
         print(log_string.format(i, loss, l_clip, args.lambda_att * l_att, args.lambda_l2 * l_l2, args.lambda_tv * l_tv))
         print(log_string.format(i, loss, l_clip, l_att, l_l2, l_tv))
         print()
@@ -193,11 +173,6 @@ if __name__ == "__main__":
         help="channel multiplier of the generator. config-f = 2, else = 1",
     )
     parser.add_argument(
-        "--FEAT_out_ckpt",
-        type=str,
-        default="FEAT"
-    )
-    parser.add_argument(
         "--batch_size",
         type=int,
         default=1
@@ -210,59 +185,78 @@ if __name__ == "__main__":
     parser.add_argument(
         "--lambda_att",
         type=float,
-        default=0.005
+        default=0.005,
+        help="latent attention regression loss factor",
     )
     parser.add_argument(
         "--lambda_tv",
         type=float,
-        default=0.00001
+        default=0.00001,
+        help="total variation loss factor",
     )
     parser.add_argument(
         "--lambda_l2",
         type=float,
-        default=0.8
+        default=0.8,
+        help="l2 loss factor"
     )
     parser.add_argument(
         "--clip_text",
-        type=str
+        type=str,
+        help="edit text e.g. beard or smile",
     )
     parser.add_argument(
         "--att_layer",
         type=int,
-        default=8
+        default=8,
+        help="layer of attention map",
     )
     parser.add_argument(
         "--att_channel",
         type=int,
-        default=32
+        default=32,
+        help="number of channels of attention map",
     )
     parser.add_argument(
         "--att_start",
         type=int,
-        default=0
+        default=0,
+        help="start attention layer of the latent mapper",
     )
     parser.add_argument(
         "--lr_step_size",
         type=int,
-        default=5000
+        default=5000,
+        help="learning rate step size for scheduler",
     )
     parser.add_argument(
         "--lr_gamma",
         type=float,
-        default=0.5
+        default=0.5,
+        help="gamma for learning rate of scheduler",
     )
     parser.add_argument(
         "--alpha",
         type=float,
-        default=0.5
+        default=0.5,
+        help="factor of latent mapper",
     )
     parser.add_argument(
         "--male_only",
-        action="store_true"
+        action="store_true",
+        help="flag that only uses images of male people"
+
     )  
     parser.add_argument(
         "--female_only",
-        action="store_true"
+        action="store_true",
+        help="flag that only uses images of female people"
+    )
+    parser.add_argument(
+        "--clip_only_steps",
+        type=int,
+        default=0,
+        help="amount of steps training only using clip loss for better convergence in some edits"
     )
 
     parser.set_defaults(male_only=False)
@@ -313,7 +307,7 @@ if __name__ == "__main__":
     #initialize lr-scheduler
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_step_size, gamma=args.lr_gamma)
 
-    clip_loss_s = CLIPLoss()
+    clip_loss = CLIPLoss()
 
     mse =  nn.MSELoss()
 
@@ -324,4 +318,4 @@ if __name__ == "__main__":
     if not os.path.exists(f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/samples"):
         os.makedirs(f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/samples")
 
-    train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, text_tokens, cos_sim, clip_loss_s, mse, mf_tokens)
+    train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, text_tokens, cos_sim, clip_loss, mse, mf_tokens)
