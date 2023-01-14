@@ -46,13 +46,16 @@ For inference it is required to have trained edits placed under a structure like
   - att_start1:att_stop1/
 
 ```
-.
-├── ...
-├── test                    # Test files (alternatively `spec` or `tests`)
-│   ├── benchmarks          # Load and stress tests
-│   ├── integration         # End-to-end, integration tests (alternatively `e2e`)
-│   └── unit                # Unit tests
-└── ...
+.edits/
+├── 0-8/
+├── beard/
+│   │   ├──  checkpoints/  
+│   │   │   ├── 01000_beard.pt
+│   │   │   ├── 02000_beard.pt    
+│   ... ... ...
+│   │   │   └── 20000_beard.pt    
+│   ...
+...
 ```
 
 To apply a trained text guided image editing execute:
