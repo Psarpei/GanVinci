@@ -13,7 +13,7 @@ This work is a reimplementation of the paper [FEAT: Face Editing with Attention]
 5. Place StyleGAN2 weights under ```checkpoints/```
 
 ## Training
-To train an text guided image editing (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond hair``` execute:
+To train an text guided image editing (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond_hair``` execute:
 
     python3 train_FEAT.py
 
