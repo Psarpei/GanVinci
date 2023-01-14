@@ -1,6 +1,6 @@
-# StyleGAN 2 in PyTorch
+# GanVinci
 
-Implementation of Analyzing and Improving the Image Quality of StyleGAN (https://arxiv.org/abs/1912.04958) in PyTorch
+Reimplementation with additional changes of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713)
 
 ## Notice
 
