@@ -38,9 +38,15 @@ with the following parameters
 * ```--male_only``` flag that only uses images of male people
 * ```--female_only``` flag that only uses images of female people
 
-## Inference
+Under ```bash_examples``` are a few
 
-To apply a trained text guided imate editing execute:
+## Inference
+For inference it is required to have trained edits placed under a structure like the following example
+- edits/
+  - att_start1:att_stop1/
+
+
+To apply a trained text guided image editing execute:
 
     python generate.py
 
