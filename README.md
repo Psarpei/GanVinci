@@ -10,125 +10,33 @@ Reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.
 5. Place weights under ```checkpoints/```
 
 ## Training
-To train an text guided image editing (e.g. ```beard```, ```open_mouth```, ```blond hair``` execute:
+To train an text guided image editing (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond hair``` execute:
 
     python3 train_FEAT.py
 
 with the following parameters
 
+* ```--clip_text``` type ```str```, help "edit text e.g. beard, smile or open_mouth",
 * ```--size``` output image size of the generator, type ```int```, default ```1024```
-    )
-    parser.add_argument(
-        "--iterations",
-        type=int,
-        default=20000,
-        help="number of samples to be generated for each image",
-    )
-    parser.add_argument("--truncation", type=float, default=1, help="truncation ratio")
-    parser.add_argument(
-        "--truncation_mean",
-        type=int,
-        default=4096,
-        help="number of vectors to calculate mean for the truncation",
-    )
-    parser.add_argument(
-        "--stylegan2_ckpt",
-        type=str,
-        default="stylegan2-ffhq-config-f.pt",
-        help="path to the model checkpoint",
-    )
-    parser.add_argument(
-        "--channel_multiplier",
-        type=int,
-        default=2,
-        help="channel multiplier of the generator. config-f = 2, else = 1",
-    )
-    parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=1
-    )
-    parser.add_argument(
-        "--lr",
-        type=float,
-        default=0.0001
-    )
-    parser.add_argument(
-        "--lambda_att",
-        type=float,
-        default=0.005,
-        help="latent attention regression loss factor",
-    )
-    parser.add_argument(
-        "--lambda_tv",
-        type=float,
-        default=0.00001,
-        help="total variation loss factor",
-    )
-    parser.add_argument(
-        "--lambda_l2",
-        type=float,
-        default=0.8,
-        help="l2 loss factor"
-    )
-    parser.add_argument(
-        "--clip_text",
-        type=str,
-        help="edit text e.g. beard or smile",
-    )
-    parser.add_argument(
-        "--att_layer",
-        type=int,
-        default=8,
-        help="layer of attention map",
-    )
-    parser.add_argument(
-        "--att_channel",
-        type=int,
-        default=32,
-        help="number of channels of attention map",
-    )
-    parser.add_argument(
-        "--att_start",
-        type=int,
-        default=0,
-        help="start attention layer of the latent mapper",
-    )
-    parser.add_argument(
-        "--lr_step_size",
-        type=int,
-        default=5000,
-        help="learning rate step size for scheduler",
-    )
-    parser.add_argument(
-        "--lr_gamma",
-        type=float,
-        default=0.5,
-        help="gamma for learning rate of scheduler",
-    )
-    parser.add_argument(
-        "--alpha",
-        type=float,
-        default=0.5,
-        help="factor of latent mapper",
-    )
-    parser.add_argument(
-        "--male_only",
-        action="store_true",
-        help="flag that only uses images of male people"
-
-    )  
-    parser.add_argument(
-        "--female_only",
-        action="store_true",
-        help="flag that only uses images of female people"
-    )
-    parser.add_argument(
-        "--clip_only_steps",
-        type=int,
-        default=0,
-        help="amount of steps training only using clip loss for better convergence in some edits"
-    )
+* ```--iterations``` number of samples to be generated for each image type ```int```, default ```20000```
+* ```--truncation``` truncation ratio type ```float```, default ```1``` 
+* ```--truncation_mean``` number of vectors to calculate mean for the truncation, type ```int```, default ```4096```
+* ```--stylegan2_ckpt``` path to the StyleGAN2 model checkpoint, type ```str```, default ```stylegan2-ffhq-config-f.pt```
+* ```--channel_multiplier``` channel multiplier of the generator. config-f = 2, else = 1, type ```int```, default ```2```
+* ```--batch_size```batch size (need to be one if --(fe)male_only is activated, type ```int```, default ```1``` 
+* ```--lr``` learnrate, type ```float```, default=0.0001
+* ```--lambda_att``` latent attention regression loss factor, type ```float```, default=0.005
+* ```--lambda_tv``` total variation loss factor, type ```float```, default ```0.00001```
+* ```--lambda_l2``` l2 loss factor, type ```float```, default ```0.8```
+* ```--att_layer``` layer of attention map, type ```int```, default ```8```
+* ```--att_channel``` number of channels of attention map, type ```int```, default ```32```
+* ```--att_start``` start attention layer of the latent mapper, type ```int``` default ```0```
+* ```--lr_step_size``` learning rate step size for scheduler, type ```int```, default ```5000```
+* ```--lr_gamma``` gamma for learning rate of scheduler, type ```float```, default ```0.5```
+* ```--alpha``` factor of latent mapper type ```float```, default ```0.5```
+* ```--male_only``` flag that only uses images of male people
+* ```--female_only``` flag that only uses images of female people
+* ```--clip_only_steps``` amount of steps training only using clip loss for better convergence in some edits, type ```int```, default ```0```
 
 ## Usage
 
