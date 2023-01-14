@@ -87,4 +87,4 @@ to apply the leaf the folder structure as it is and place everything under ``edi
 Then follow the instructions under Inference.
 
 ## Acknowledgments
-This code borrows heavily from [stylegan2-pytorch](https://github.com/rosinality/stylegan2-pytorch) and the model is based on the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713)
+This code borrows heavily from [stylegan2-pytorch](https://github.com/rosinality/stylegan2-pytorch) and the model is based on the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713).
