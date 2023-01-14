@@ -1,5 +1,5 @@
 # GanVinci
-Photorealistic attention based text guided human image editing with StyleGAN2.
+Photorealistic attention based text guided human image editing with a latent mapper for StyleGAN2.
 
 ![image of my project](https://github.com/Psarpei/GanVinci/blob/master/GanVinci2.png)
 
