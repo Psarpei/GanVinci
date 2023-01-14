@@ -81,7 +81,7 @@ with the following parameters
 
 In the ```bash_examples/```folder are a few inference invokes provided.
 
-## Pretrained Edits
+## Pre-trained Edits
 You can download some pretrained edit weights here.
 to apply the leaf the folder structure as it is and place everything under ``edits``. 
 Then follow the instructions under Inference.
