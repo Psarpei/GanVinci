@@ -1,6 +1,8 @@
 # GanVinci
 Photorealistic attention based text guided human image editing with StyleGAN2.
 
+![image of my project](https://github.com/Psarpei/GanVinci/blob/master/GanVinci.png)
+
 This work is a reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713) with additional changes and improvements.
 
 ## Setup
