@@ -40,26 +40,9 @@ def generate(args, feat, device, mean_latent, clip_model, mf_tokens): # text_tok
 
                 probs = clip_most_likely_cat(sample_resized, mf_tokens, clip_model)
 
-            if(args.male_only and probs[0] < 0.8):
-                print(probs)
+            if((args.male_only and probs[0] < 0.8) or (args.female_only and probs[1] < 0.8)):
                 continue
 
-            """
-            sample_resized = F.interpolate(sample,
-                                     size=(224, 224),
-                                     mode='bilinear')
-
-            
-            probs = clip_most_likely_cat(sample_resized, text_tokens, clip_model)
-            if(probs[0] > 0.8):
-                utils.save_image(
-                    sample,
-                    f"sample/{str(i).zfill(6)}_{['male', 'female'][probs.argmax()]}_{probs}.png",
-                    nrow=1,
-                    normalize=True,
-                    range=(-1, 1),
-                )
-            """
             utils.save_image(
                 sample,
                 f"edits/{args.att_start}-{args.att_layer}/{args.clip_text}/samples/{str(i).zfill(6)}.png",
@@ -83,9 +66,7 @@ def generate(args, feat, device, mean_latent, clip_model, mf_tokens): # text_tok
                 normalize=True,
                 range=(-1, 1),
             )
-            print('mask')
-            print(mask)
-            print(mask.max())
+
             i+=1
 
 
@@ -128,47 +109,63 @@ if __name__ == "__main__":
     parser.add_argument(
         "--alpha",
         type=float,
-        default=0.1
+        default=0.1,
+        help="factor of latent mapper",
     )
     parser.add_argument(
         "--att_layer",
         type=int,
-        default=8
+        default=8,
+        help="layer of attention map",
     )
     parser.add_argument(
         "--att_channel",
         type=int,
-        default=32
+        default=32,
+        help="number of channels of attention map",
     )
     parser.add_argument(
         "--att_start",
         type=int,
-        default=0
+        default=0,
+        help="start attention layer of the latent mapper",
     )
     parser.add_argument(
         "--mask_threshold",
         type=float,
-        default=0.8
+        default=0.8,
+        help="threshold for mask apply based on predicted pixels",
     )
     parser.add_argument(
         "--seed",
         type=int,
-        default=0
+        default=0,
+        help="random seed for image generation",
     )
     parser.add_argument(
         "--clip_text",
         type=str,
-        default=""
+        default="",
+        help="name of clip edit checkpoint, if 0 standard styleGAN2 image generation is applied"
     )
     parser.add_argument(
         "--train_iter",
         type=str,
-        default=""
+        default="",
+        help="iteration steps of edit checkpoint"
     )  
     parser.add_argument(
         "--male_only",
-        action="store_true"
+        action="store_true",
+        help="flag that only uses images of female people"
     )  
+    parser.add_argument(
+        "--female_only",
+        action="store_true",
+        help="flag that only uses images of female people"
+    ) 
+    parser.set_defaults(male_only=False)
+    parser.set_defaults(female_only=False)
 
     args = parser.parse_args()
 
