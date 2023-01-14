@@ -1,10 +1,13 @@
 # GanVinci
 
-Reimplementation with additional changes of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713)
+Reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713) with additional changes and improvements.
 
-## Notice
-
-I have tried to match official implementation as close as possible, but maybe there are some details I missed. So please use this implementation with care.
+## Setup
+1. Clone this repository ```https://github.com/Psarpei/GanVinci.git```
+2. CD into this repo: ```cd GanVinci```
+3. Create conda environment from environment.yml ```conda env create -f environment.yml```
+4. Download StyleGAN2 weights from xxxxx /home/pascal/code/GanVinci/stylegan2-ffhq-config-f.pt 
+5. Place weights under ```checkpoints/```
 
 ## Requirements
 
