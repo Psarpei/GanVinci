@@ -33,8 +33,8 @@ with the following parameters
 * ```--alpha``` factor of latent mapper type ```float```, default ```0.5```
 * ```--clip_only_steps``` amount of steps training only using clip loss for better convergence in some edits, type ```int```, default ```0```
 * ```--size``` output image size of the generator, type ```int```, default ```1024```
-* ```--iterations``` number of samples to be generated for each image type ```int```, default ```20000```
-* ```--truncation``` truncation ratio type ```float```, default ```1``` 
+* ```--iterations``` number of samples to be generated for each image, type ```int```, default ```20000```
+* ```--truncation``` truncation ratio, type ```float```, default ```1``` 
 * ```--truncation_mean``` number of vectors to calculate mean for the truncation, type ```int```, default ```4096```
 * ```--stylegan2_ckpt``` path to the StyleGAN2 model checkpoint, type ```str```, default ```stylegan2-ffhq-config-f.pt```
 * ```--channel_multiplier``` channel multiplier of the generator. config-f = 2, else = 1, type ```int```, default ```2```
