@@ -45,6 +45,14 @@ For inference it is required to have trained edits placed under a structure like
 - edits/
   - att_start1:att_stop1/
 
+.
+├── ...
+├── test                    # Test files (alternatively `spec` or `tests`)
+│   ├── benchmarks          # Load and stress tests
+│   ├── integration         # End-to-end, integration tests (alternatively `e2e`)
+│   └── unit                # Unit tests
+└── ...
+
 
 To apply a trained text guided image editing execute:
 
