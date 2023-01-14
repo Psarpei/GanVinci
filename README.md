@@ -11,7 +11,9 @@ Reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.
 
 ## Training
 To train an text guided image editing (e.g. ```beard```, ```open_mouth```, ```blond hair``` execute:
+
     python3 train_FEAT.py
+
 with the following parameters
 
 * ```--size``` output image size of the generator, type ```int```, default ```1024```
