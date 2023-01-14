@@ -3,7 +3,7 @@ Photorealistic attention based text guided human image editing with StyleGAN2.
 
 <img
      src="https://github.com/Psarpei/GanVinci/blob/master/GanVinci.png"
-     style="width:400px; height:200px;">
+     style="width:400px;">
 
 ![image of my project](https://github.com/Psarpei/GanVinci/blob/master/GanVinci.png)
 
