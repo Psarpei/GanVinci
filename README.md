@@ -1,13 +1,14 @@
 # GanVinci
+Photorealistic attention based text guided human image editing with StyleGAN2.
 
-Reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713) with additional changes and improvements.
+This work is a reimplementation of the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713) with additional changes and improvements.
 
 ## Setup
 1. Clone this repository ```https://github.com/Psarpei/GanVinci.git```
 2. CD into this repo: ```cd GanVinci```
 3. Create conda environment from environment.yml ```conda env create -f environment.yml```
-4. Download StyleGAN2 config-f weights from xxxxx /home/pascal/code/GanVinci/stylegan2-ffhq-config-f.pt 
-5. Place weights under ```checkpoints/```
+4. Download StyleGAN2 config-f weights from [here](https://drive.google.com/drive/folders/1C58moKK0AOri27DuhZPEKxHC8ea9SRAF?usp=share_link)
+5. Place StyleGAN2 weights under ```checkpoints/```
 
 ## Training
 To train an text guided image editing (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond hair``` execute:
