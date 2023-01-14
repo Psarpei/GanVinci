@@ -85,9 +85,8 @@ with the following parameters
 In the ```bash_examples/```folder are a few inference invokes provided.
 
 ## Pre-trained Edits
-You can download some pretrained edit weights here.
-to apply the leaf the folder structure as it is and place everything under ``edits``. 
-Then follow the instructions under Inference.
+You can download some weights of pre-trained edits here.
+To apply a pretrained edit leave the folder structure as it is and place everything under ``edits`` like explained in the inference section. 
 
 ## Acknowledgments
 This code borrows heavily from [stylegan2-pytorch](https://github.com/rosinality/stylegan2-pytorch) and the model is based on the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713).
