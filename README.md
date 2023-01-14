@@ -41,9 +41,7 @@ with the following parameters
 Under ```bash_examples``` are a few
 
 ## Inference
-For inference it is required to have trained edits placed under a structure like the following example
-- edits/
-  - att_start1:att_stop1/
+For inference it is required to have the trained edit checkpoints placed under the folder structure like the following example
 
 ```
 edits/
