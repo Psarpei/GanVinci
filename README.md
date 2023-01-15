@@ -61,10 +61,10 @@ edits/
 
 To apply a trained text guided image edit execute:
 
-    python generate.py
+    python3 generate.py
 
 with the following parameters
-* ```--clip_text``` name of edit (e.g. ```beard```, ```smile``` etc.), if 0 standard styleGAN2 image generation is applied, type ```str```, default ```""```
+* ```--clip_text``` name of edit (e.g. ```beard```, ```smile``` etc.), if "" standard styleGAN2 image generation is applied, type ```str```, default ```""```
 * ```--alpha``` factor of latent mapper, type ```float```, default ```0.1``` 
 * ```--att_layer``` layer of attention map, type ```int```, default ```8``` 
 * ```--att_channel``` number of channels of attention map, type ```int```, default ```32```
