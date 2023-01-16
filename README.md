@@ -13,7 +13,7 @@ This work is a reimplementation of the paper [FEAT: Face Editing with Attention]
 5. Place StyleGAN2 weights under ```checkpoints/```
 
 ## Training
-To train an text guided image editing (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond_hair``` execute:
+To train a text guided image edit (e.g. ```beard```, ```smiling_person```, ```open_mouth```, ```blond_hair``` etc.) execute:
 
     python3 train_FEAT.py
 
@@ -86,7 +86,7 @@ In the ```bash_examples/```folder are a few inference invokes provided.
 
 ## Pre-trained Edits
 You can download some weights of pre-trained edits [here](https://drive.google.com/drive/folders/1O2cCwasxJ6H6vkgO4iAyZQOIwzEno9vD?usp=share_link).
-To apply a pre-trained edit leave the folder structure as it is and place everything under ``edits/`` like explained in the inference section. 
+To apply a pre-trained edit leave the folder structure as it is and place everything under ``edits/`` how explained in the inference section. 
 
 ## Acknowledgments
 This code borrows heavily from [stylegan2-pytorch](https://github.com/rosinality/stylegan2-pytorch) and the model is based on the paper [FEAT: Face Editing with Attention](https://arxiv.org/abs/2202.02713).
