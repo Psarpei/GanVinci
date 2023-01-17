@@ -103,8 +103,6 @@ def train(args, feat, device, mean_latent, optimizer, scheduler, clip_model, tex
         else:
             loss = l_clip + args.lambda_l2 * l_l2 + args.lambda_att * l_att + args.lambda_tv * l_tv         
 
-        loss = l_clip + args.lambda_l2 * l_l2 + args.lambda_att * l_att + args.lambda_tv * l_tv 
-
         print(log_string.format(i, loss, l_clip, args.lambda_att * l_att, args.lambda_l2 * l_l2, args.lambda_tv * l_tv))
         print(log_string.format(i, loss, l_clip, l_att, l_l2, l_tv))
         print()
